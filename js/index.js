@@ -45,14 +45,27 @@ function createProduct() {
   const newProduct = document.querySelector('#new-product-name').value;
   const newPrice = document.querySelector('#new-product-price').value;
 
-  // Should add a conditional here because that this only works if the number has no decimals ( newPrice % 1 !== 0)
-  const newPadedPrice = String(newPrice) + '.00';
+  // Padding the price input if necessary
+  let newPadedPrice = String(newPrice);
+  if (newPadedPrice.length === 1) newPadedPrice += '.00';
+  else if (newPadedPrice.length === 3) newPadedPrice += '0';
 
-  // Testing different methods to append a new <tr> in the table body
-
-  // Adding a new row with innerHTML - Still have to figure out why the removeBtn doesn't work
-  const newTr = document.createElement('tr');
-  newTr.innerHTML = `<tr class="product">
+  // Append a new <tr> in the table body with template
+  if ('content' in document.createElement('template')) {
+    const templateElement = document.querySelector('#newProductRow');
+    const tablebodyElement = document.querySelector('tbody');
+    const clone = document.importNode(templateElement.content, true);
+    const spanElements = clone.querySelectorAll('td span');
+    spanElements[0].textContent = newProduct;
+    spanElements[1].textContent = newPadedPrice;
+    tablebodyElement.appendChild(clone);
+    const btnsRemove = document.querySelectorAll('.btn-remove');
+    const newBtnRemove = btnsRemove[btnsRemove.length - 1];
+    newBtnRemove.addEventListener('click', removeProduct);
+  } else {
+    // innerHTML method in case template doesn't work in the browser
+    const newTr = document.createElement('tr');
+    newTr.innerHTML = `<tr class="product">
       <td class="name">
         <span>${newProduct}</span>
       </td>
@@ -62,34 +75,17 @@ function createProduct() {
       </td>
       <td class="subtotal">$<span>0</span></td>
       <td class="action">
-      <button class="btn btn-remove">Remove</button>
+      <button class="btn btn-remove last">Remove</button>
       </td>
       </tr>`;
 
-  tableBodyElement.appendChild(newTr);
-  const newButtonRemove = document.querySelector('.btn-remove:last-child');
-  newButtonRemove.addEventListener('click', removeProduct);
+    tableBodyElement.appendChild(newTr);
+    const btnsRemove = document.querySelectorAll('.btn-remove');
+    const newBtnRemove = btnsRemove[btnsRemove.length - 1];
+    newBtnRemove.addEventListener('click', removeProduct);
+  }
 
-  // this is the template method from MDN, cced, I'd like to come back to it later to make it work but right now it doesn't
-  // if ('content' in document.querySelector('template')) {
-  //   const templateRow = document.querySelector('#newProductRow');
-
-  //   const tablebodyElement = document.querySelector('tbody');
-  //   const clone = document.importNode(template.content, true);
-  //   const tableDataElements = clone.querySelectorAll('td');
-  //   td[0].textContent = newProduct;
-  //   td[1].textContent = newPadedPrice;
-
-  //   tbody.appendChild(clone);
-  //   const newButtonRemove = document.querySelector('.btn-remove');
-  //   newButtonRemove.addEventListener('click', removeProduct);
-  // }
-  // else {
-  //   // Une autre méthode pour ajouter les lignes
-  //   // car l'élément HTML n'est pas pris en charge.
-  // }
-
-  // First try, very long method (but it works)
+  // First, very long, try...
   // const newTr = document.createElement('tr');
   // newTr.className = 'product';
   // const newTdName = document.createElement('td');
@@ -128,7 +124,6 @@ function createProduct() {
   // newButtonRemove.textContent = 'Remove';
   // newTdButton.appendChild(newButtonRemove);
   // newTr.appendChild(newTdButton);
-
   // tableBodyElement.appendChild(newTr);
   // newButtonRemove.addEventListener('click', removeProduct)
 
